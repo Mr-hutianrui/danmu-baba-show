@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>爸爸来了！</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}
+body{background:#050510;color:#fff;font-family:system-ui,"Microsoft YaHei",sans-serif;background-image:radial-gradient(circle at 50% 45%,#30205d 0,#10102a 36%,#03030a 78%)}
+#stage{position:fixed;inset:0;overflow:hidden;pointer-events:none}
+.danmaku{position:absolute;left:0;white-space:nowrap;font-weight:1000;letter-spacing:1px;text-shadow:0 2px 5px #000,0 0 12px currentColor,0 0 26px currentColor;animation:fly linear forwards;will-change:transform}
+@keyframes fly{from{transform:translateX(110vw) scale(var(--s,1))}to{transform:translateX(-140%) scale(var(--s,1))}}
+#center{position:absolute;z-index:2;inset:0;display:grid;place-items:center;pointer-events:none}
+.hero{text-align:center;padding:25px 38px;border:1px solid #ffffff35;border-radius:30px;background:#09091dcc;box-shadow:0 0 80px #ff2eaa30,0 0 100px #00eaff18;backdrop-filter:blur(9px);max-width:min(90vw,760px)}
+.kicker{font-size:clamp(11px,2vw,15px);letter-spacing:7px;color:#8dfaff;font-weight:900}
+h1{font-size:clamp(42px,9vw,100px);line-height:1;margin:16px 0;background:linear-gradient(100deg,#ff39b8,#fff36b,#00f0ff);background-clip:text;color:transparent;text-shadow:0 0 30px #ff3cac55}
+.subtitle{font-size:clamp(16px,3vw,25px);font-weight:900;color:#fff;text-shadow:0 0 16px #ff36ba}
+#start{pointer-events:auto;margin-top:22px;padding:15px 36px;border:0;border-radius:999px;color:#fff;font-size:19px;font-weight:1000;letter-spacing:2px;background:linear-gradient(100deg,#ff299f,#744dff,#00bfe9);box-shadow:0 0 30px #ff299f77;cursor:pointer}
+#start:hover{filter:brightness(1.2);transform:scale(1.04)}
+#hint{font-size:12px;color:#aaa;margin-top:13px}
+#flash{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:0;background:white}
+.flash{animation:flash .15s ease-out}@keyframes flash{to{opacity:0}}
+#sound{position:fixed;z-index:4;right:15px;bottom:12px;color:#aaa;font-size:11px;opacity:.7}
+@media(max-width:600px){.hero{padding:22px 16px}.kicker{letter-spacing:3px}}
+</style>
+</head>
+<body>
+<div id="stage"></div><div id="flash"></div>
+<div id="center"><div class="hero">
+<div class="kicker">全场注意 · 最高指令 · 爸爸驾到</div>
+<h1 id="siteName">爸爸驾到</h1>
+<div class="subtitle">我是你的爸爸！！！</div>
+<button id="start">🔥 点击接受爸爸的洗礼 🔥</button>
+<div id="hint">点击后自动全屏 · 弹幕拉满 · 随机音乐启动</div>
+</div></div>
+<div id="sound">建议打开声音体验</div>
+<script>
+const names=['爸爸统治宇宙','爸爸来了谁敢不服','爸爸の领域','全体起立叫爸爸','爸爸弹幕风暴','爸爸能量中心','爸爸降临现场','爸爸说了算','爸爸无敌俱乐部','爸爸の绝对领域','爸爸震撼发布会','爸爸今天也很狂'];
+const name=names[Math.floor(Math.random()*names.length)];
+document.title=name;document.querySelector('#siteName').textContent=name;
+const stage=document.querySelector('#stage'),flash=document.querySelector('#flash');
+const lines=[
+'我是你的爸爸！！！','叫爸爸！！！','爸爸来了！！！','你爸爸永远是你爸爸','爸爸说：都给我站好！','爸爸の力量！！！',
+'谁是爸爸？我！','爸爸驾到，闲人退散','爸爸一出场，全场鼓掌','爸爸：这把稳了','别问，问就是你爸',
+'爸爸的爱，铺满屏幕','爸爸正在巡视','爸爸认证：你很有眼光','爸爸今天也在发光','爸爸一声令下！',
+'听爸爸的话！！！','爸爸说冲就冲！','爸爸的地盘听爸爸的','全体都有，叫爸爸！','爸爸能量突破天际',
+'爸爸：我来组成头部','爸爸の压迫感','爸爸来了，弹幕让路','爸爸永不迟到，只是压轴',
+'你可以不信，但我真是你爸爸','爸爸发来一条弹幕','爸爸正在统治评论区','爸爸牌快乐，无限续杯',
+'爸爸：这就是实力','爸爸一笑，天地失色','爸爸大军集合！！！','爸爸弹幕，启动！！！'
+];
+const colors=['#ff3ca6','#00f5ff','#ffe45e','#9dff68','#fff','#bd91ff','#ff805c','#ffdfef'];
+let audio,master,playing=false,spawnLoop;
+function addDanmaku(){
+ const e=document.createElement('div');e.className='danmaku';
+ e.textContent=lines[Math.floor(Math.random()*lines.length)];
+ const big=Math.random()<.22;e.style.fontSize=(big?42:25+Math.random()*30)+'px';
+ e.style.top=Math.random()*96+'vh';e.style.color=colors[Math.floor(Math.random()*colors.length)];
+ e.style.animationDuration=(2.1+Math.random()*3.2)+'s';
+ e.style.setProperty('--s',(.85+Math.random()*.7).toFixed(2));
+ stage.appendChild(e);e.addEventListener('animationend',()=>e.remove());
+ if(Math.random()<.16){flash.classList.remove('flash');void flash.offsetWidth;flash.classList.add('flash')}
+}
+function startMusic(){
+ const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+ audio=new AC();master=audio.createGain();master.gain.value=.22;master.connect(audio.destination);
+ const scales=[[261.6,329.6,392,523.3,659.3],[220,261.6,329.6,392,493.9],[293.7,349.2,440,587.3,698.5],[196,246.9,293.7,392,493.9]];
+ const scale=scales[Math.floor(Math.random()*scales.length)];let beat=0;
+ function tick(){
+  if(!playing)return;const t=audio.currentTime;
+  const o=audio.createOscillator(),g=audio.createGain();o.type=beat%4===0?'sawtooth':'triangle';
+  o.frequency.value=beat%4===0?scale[0]/2:scale[Math.floor(Math.random()*scale.length)]*(Math.random()<.2?2:1);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(beat%4===0?.16:.07,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.19);
+  o.connect(g);g.connect(master);o.start(t);o.stop(t+.21);
+  if(beat%4===0){const b=audio.createOscillator(),bg=audio.createGain();b.type='sine';b.frequency.setValueAtTime(95,t);b.frequency.exponentialRampToValueAtTime(35,t+.14);bg.gain.setValueAtTime(.25,t);bg.gain.exponentialRampToValueAtTime(.001,t+.16);b.connect(bg);bg.connect(master);b.start(t);b.stop(t+.17)}
+  beat++;setTimeout(tick,115);
+ }tick();
+}
+document.querySelector('#start').addEventListener('click',async()=>{
+ if(playing)return;playing=true;
+ try{if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen()}catch(e){}
+ document.querySelector('#center').style.display='none';document.querySelector('#sound').textContent='爸爸弹幕风暴进行中';
+ startMusic();
+ // 高密度持续生成，铺满屏幕
+ for(let i=0;i<95;i++)setTimeout(addDanmaku,i*19);
+ spawnLoop=setInterval(()=>{for(let i=0;i<7;i++)addDanmaku()},75);
+});
+</script>
+</body>
+</html>
